@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Title of the document</title>
+<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+</head>
+
+<body>
+<section>	
+	<p> turn: <span id='turn'>1</span></p>
+	<form name='board' onsubmit='return sub();'>
+		Choose Col<input type='text' name='col' />
+  		<input type="submit">
+	</form>
+
+</section>
+
+<section>
+	<div id='output'></div>
+</section>
+
+<section>
+	<div id='error'></div>
+</section>
+
+</body>
+
+<script>
+var board = {
+	col1: [],
+	col2: [],
+	col3: [],
+	col4: [],
+	col5: [],
+	col6: [],
+	col7: []
+};
+
+var totalCol = 7;
+var totalRow = 6;
+var turn = 1;
+var col;
+
+function sub(){
+	var col = document.forms["board"]["col"].value;
+    if (col == null || col == "" || isNaN(col) || col > 7 || col <= 0 ) {
+        $('#error').html("please choose a valid col");
+        return false;
+    }else{
+    	 $('#error').html("");
+    }
+    dropTokens(turn, 'col'+col);
+		turn = (turn % 2) +1;
+		printBoard();
+		$('#turn').html(turn);
+
+	if(hasWinner()){
+		console.log('winner is player ' + ((turn % 2) +1));
+	}
+	return false;
+}
+
+function dropTokens(_player, _col){
+	//check if col is full
+	if (board[_col].length <= totalRow){
+		board[_col].push(_player);
+	}
+}
+
+function printBoard(){
+	var s ='<table>';
+	var keys = ['col1','col2','col3','col4','col5','col6','col7'];
+	for(var i = 5; i >= 0; i--){
+		s = s+'<tr>'
+		keys.forEach(function(key){
+			if(board[key].length && board[key].length >= i+1 && board[key][i]){
+				s = s + '<td>'+board[key][i]+'</td>';
+			}else{
+				s = s + '<td>*</td>';
+			}
+		});
+		s = s+'</tr>'
+
+	}
+	s = s+ '</table>';
+	$('#output').html(s);
+}
+
+function hasWinner(){
+	var rt = verticalWinner();
+	if(!rt){
+		rt = horizontallWinner();
+	}
+	if(!rt){
+		rt = diagonalOne();
+	}
+	if(!rt){
+		rt = diagonalThree();
+	}
+	if(!rt){
+		rt = diagonalTwo();
+	}
+	if(!rt){
+		rt = diagonalFour();
+	}
+	return rt;
+}
+
+function verticalWinner(){
+	var win = false;
+	for (var i=0; i < totalCol; i++){
+		for (var j=0; j< 3; j++){
+			if(board['col'+(i+1)].length < j+4){
+				break;
+			}
+
+			var temp = board['col'+(i+1)][j];
+			for (var k=j+1; k<j+4; k++){
+
+				if( temp !== board['col'+(i+1)][k]){
+					win = false;
+					break;
+				}else{
+					win = true;
+				}
+			}
+
+			if(win){
+				return win;
+			}
+		}
+
+	}
+	return win;
+}
+
+function horizontallWinner(){
+	var win = false;
+	for (var i=0; i < totalRow; i++){
+		for (var j=0; j< 4; j++){
+			if(board['col'+(j+1)].length < i){
+				break;
+			}
+			var temp = board['col'+(j+1)][i];
+			if(!temp){
+				break;
+			}
+			for (var k=j+1; k<j+4; k++){
+				if(board['col'+(k+1)].length < i){
+					win = false;
+					break;
+				}
+				if( temp !== board['col'+(k+1)][i]){
+					win = false;
+					break;
+				}else{
+					win = true;
+				}
+			}
+
+			if(win){
+				return win;
+			}
+		}
+	}
+	return win;
+}
+
+function diagonalOne(){
+	var win = false;
+	for(var i=4; i <=6; i++){
+		for(var j=i, k=5; j>=4 && k >= 0; j--, k--){
+			if(board['col'+j].length < k){
+				win = false;
+				continue;
+			}
+			var temp = board['col'+j][k];
+			for(var m=1; m<=3; m++){
+				if(board['col'+(j-m)].length < k-m){
+					win = false;
+					break;
+				}
+				if(temp !== board['col'+(j-m)][k-m]){
+					win = false;
+					break;
+				}else{
+					win = true;
+				}
+				
+			}
+
+			if(win){
+				return win;
+			}
+
+		}
+
+	}
+	return win;
+}
+
+function diagonalTwo(){
+	var win = false;
+	for(var i=2; i <=4; i++){
+		for(var j=i, k=5; j<=4 && k >= 0; j++, k--){
+			
+			if(board['col'+j].length < k){
+				win = false;
+				continue;
+			}
+			
+			var temp = board['col'+j][k];
+			for(var m=1; m<=3; m++){
+				
+				if(board['col'+(j+m)].length < k-m){
+					win = false;
+					break;
+				}
+				if(temp !== board['col'+(j+m)][k-m]){
+					win = false;
+					break;
+				}else{
+					win = true;
+				}
+				
+			}
+
+			if(win){
+				return win;
+			}
+
+		}
+
+	}
+	return win;
+}
+
+function diagonalThree(){
+	var win = false;
+	for(var i=2; i <=4; i++){
+		for(var j=i, k=0; j<=4 && k <= 5; j++, k++){
+			
+			if(board['col'+j].length < k){
+				win = false;
+				continue;
+			}
+			
+			var temp = board['col'+j][k];
+			for(var m=1; m<=3; m++){
+				console.log(' j-m = '+(j+m)+' k-m = '+(k+m));
+				
+				if(board['col'+(j+m)].length < k+m){
+					win = false;
+					break;
+				}
+				if(temp !== board['col'+(j+m)][k+m]){
+					win = false;
+					break;
+				}else{
+					win = true;
+				}
+				
+			}
+
+			if(win){
+				return win;
+			}
+
+		}
+
+	}
+	return win;
+}
+
+function diagonalFour(){
+	var win = false;
+	for(var i=4; i <=6; i++){
+		for(var j=i, k=0; j>=4 && k <= 5; j--, k++){
+			
+			if(board['col'+j].length < k){
+				win = false;
+				continue;
+			}
+			
+			var temp = board['col'+j][k];
+			for(var m=1; m<=3; m++){
+				
+				if(board['col'+(j-m)].length < k+m){
+					win = false;
+					break;
+				}
+				if(temp !== board['col'+(j-m)][k+m]){
+					win = false;
+					break;
+				}else{
+					win = true;
+				}
+			}
+
+			if(win){
+				return win;
+			}
+		}
+	}
+	return win;
+}
+
+</script>
+</html>
